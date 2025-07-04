@@ -655,16 +655,6 @@
                 // Can only move out of home with a 6
                 if (diceValue !== 6) return false;
                 
-                // Check if starting position is blocked by same color piece
-                const startPos = startPositions[color];
-                const isStartingPositionBlocked = pieces[color].some(p => 
-                    p.id !== piece.id && p.pos === startPos
-                );
-                
-                if (isStartingPositionBlocked) {
-                    return false; // Cannot move out if starting position is blocked
-                }
-                
                 return true;
             }
             
