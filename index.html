@@ -498,7 +498,14 @@
                         } else {
                             canRollDice = true;
                             rollButton.disabled = false;
-                            document.getElementById('gameInfo').textContent = 'Roll again (you got a 6)!';
+                            document.getElementById('gameInfo').textContent = 'Auto-rolling again (you got a 6)...';
+                            
+                            // Auto-roll again after getting a 6
+                            setTimeout(() => {
+                                if (canRollDice && !gameEnded) {
+                                    rollDice();
+                                }
+                            }, 1000);
                         }
                     }, 1500);
                 } else if (movablePieces.length === 1) {
@@ -508,9 +515,21 @@
                         movePiece(movablePieces[0].color, movablePieces[0].id);
                     }, 1000);
                 } else {
-                    // Multiple pieces can move, let player choose
-                    document.getElementById('gameInfo').textContent = 'Select a piece to move!';
-                    highlightMovablePieces(movablePieces);
+                    // Check if this is the special case: rolled 6 with no pieces on board
+                    const color = playerColors[currentPlayer];
+                    const piecesOnBoard = pieces[color].filter(piece => !piece.home && piece.pos !== 'center');
+                    
+                    if (diceValue === 6 && piecesOnBoard.length === 0) {
+                        // Player rolled 6 and has no pieces on board - auto-select first piece
+                        document.getElementById('gameInfo').textContent = 'Auto-moving first piece out of home...';
+                        setTimeout(() => {
+                            movePiece(movablePieces[0].color, movablePieces[0].id);
+                        }, 1000);
+                    } else {
+                        // Multiple pieces can move, let player choose
+                        document.getElementById('gameInfo').textContent = 'Select a piece to move!';
+                        highlightMovablePieces(movablePieces);
+                    }
                 }
             }, 1000);
         }
@@ -670,7 +689,14 @@
             if (diceValue === 6) {
                 canRollDice = true;
                 document.getElementById('rollButton').disabled = false;
-                document.getElementById('gameInfo').textContent = 'Roll again (you got a 6)!';
+                document.getElementById('gameInfo').textContent = 'Auto-rolling again (you got a 6)...';
+                
+                // Auto-roll again after getting a 6
+                setTimeout(() => {
+                    if (canRollDice && !gameEnded) {
+                        rollDice();
+                    }
+                }, 1000);
             } else {
                 nextPlayer();
             }
@@ -713,7 +739,14 @@
             if (!gameEnded) {
                 canRollDice = true;
                 document.getElementById('rollButton').disabled = false;
-                document.getElementById('gameInfo').textContent = 'Roll the dice to start your turn!';
+                document.getElementById('gameInfo').textContent = 'Auto-rolling dice...';
+                
+                // Auto-roll dice after a short delay
+                setTimeout(() => {
+                    if (canRollDice && !gameEnded) {
+                        rollDice();
+                    }
+                }, 1000);
             }
             
             // Reset dice
