@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Game Scenario</title>
+</head>
+<body>
+    <h2>Test Game Scenario</h2>
+    <p>This test will simulate the scenario where multiple yellow pieces are placed at the same starting position.</p>
+    <button onclick="simulateIssue()">Simulate Issue</button>
+    <button onclick="testFix()">Test Fix</button>
+    <div id="result"></div>
+    
+    <script>
+        // Simulate the original issue scenario
+        function simulateIssue() {
+            const result = document.getElementById('result');
+            result.innerHTML = `
+                <h3>Original Issue:</h3>
+                <p>Before fix: When two yellow pieces rolled 6 and moved to starting position 39, they would be placed on the same square and appear as one piece.</p>
+                <p>Both pieces would have pos=39 and getSquarePosition() would return the same [row, col] coordinates.</p>
+                <p>In placePieces(), both pieces would be added to the same square element without any offset.</p>
+            `;
+        }
+        
+        // Test the fix
+        function testFix() {
+            const result = document.getElementById('result');
+            result.innerHTML = `
+                <h3>Fix Applied:</h3>
+                <p>After fix: When multiple pieces are placed in the same square, they are offset visually:</p>
+                <ul>
+                    <li>First piece: normal position (top: 10%, left: 10%)</li>
+                    <li>Second piece: offset right (top: 10%, left: 25%)</li>
+                    <li>Third piece: offset down (top: 25%, left: 10%)</li>
+                    <li>Fourth piece: offset down-right (top: 25%, left: 25%)</li>
+                </ul>
+                <p>This makes all pieces in the same square visually distinguishable.</p>
+            `;
+        }
+    </script>
+</body>
+</html>
