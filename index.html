@@ -736,7 +736,10 @@
                 return;
             }
             
-            movePiece(color, pieceId);
+            // Add small delay to ensure DOM is ready for animation, similar to automated moves
+            setTimeout(() => {
+                movePiece(color, pieceId);
+            }, 100);
         }
         
         // Animate piece movement
