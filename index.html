@@ -732,13 +732,9 @@
         
         // Select piece to move
         function selectPiece(color, pieceId) {
-            console.log(`selectPiece called: ${color} piece ${pieceId}`);
             if (color !== playerColors[currentPlayer] || !canMovePiece(color, pieceId)) {
-                console.log(`Invalid selection: current player is ${playerColors[currentPlayer]}, canMove: ${canMovePiece(color, pieceId)}`);
                 return;
             }
-            
-            console.log(`Valid selection, moving piece after delay...`);
             
             // Clear all piece animations first to ensure clean state
             document.querySelectorAll('.piece').forEach(piece => {
@@ -831,7 +827,6 @@
         
         // Move piece
         function movePiece(color, pieceId) {
-            console.log(`movePiece called: ${color} piece ${pieceId}`);
             const piece = pieces[color].find(p => p.id === pieceId);
             if (!piece) return;
             
@@ -841,10 +836,8 @@
             // Store original position for animation
             const originalPos = piece.pos;
             
-            console.log(`Starting animation from ${originalPos} to ${newPos}`);
             // Start the animation
             animatePieceMovement(color, pieceId, originalPos, newPos, () => {
-                console.log(`Animation completed, updating game state`);
                 // This callback runs after animation completes
                 
                 // Check for captures
