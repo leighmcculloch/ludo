@@ -65,6 +65,10 @@
         .square:hover {
             background: #e0e0e0;
         }
+        
+        .square.non-playable:hover {
+            background: transparent;
+        }
 
         .square.home-red { background: #ffcccb; }
         .square.home-blue { background: #add8e6; }
@@ -76,6 +80,11 @@
         .square.path-blue { background: #4dabf7; }
         .square.path-green { background: #51cf66; }
         .square.path-yellow { background: #ffd43b; }
+        .square.non-playable { 
+            background: transparent; 
+            border: none; 
+            cursor: default;
+        }
 
         .piece {
             width: 80%;
@@ -352,6 +361,29 @@
             setupEventListeners();
         }
         
+        // Check if a square is playable (pieces can be placed on it)
+        function isPlayableSquare(row, col) {
+            // Home squares
+            if (row >= 1 && row <= 2 && col >= 1 && col <= 2) return true; // Red home
+            if (row >= 1 && row <= 2 && col >= 12 && col <= 13) return true; // Blue home
+            if (row >= 12 && row <= 13 && col >= 12 && col <= 13) return true; // Green home
+            if (row >= 12 && row <= 13 && col >= 1 && col <= 2) return true; // Yellow home
+            
+            // Center square
+            if (row === 7 && col === 7) return true;
+            
+            // Board path squares
+            if (boardPath.some(pos => pos[0] === row && pos[1] === col)) return true;
+            
+            // Home path squares
+            if (homePaths.red.some(pos => pos[0] === row && pos[1] === col)) return true;
+            if (homePaths.blue.some(pos => pos[0] === row && pos[1] === col)) return true;
+            if (homePaths.green.some(pos => pos[0] === row && pos[1] === col)) return true;
+            if (homePaths.yellow.some(pos => pos[0] === row && pos[1] === col)) return true;
+            
+            return false;
+        }
+        
         // Create the game board
         function createBoard() {
             const board = document.getElementById('gameBoard');
@@ -364,6 +396,11 @@
                     square.dataset.row = row;
                     square.dataset.col = col;
                     square.id = `square-${row}-${col}`;
+                    
+                    // Check if this square is playable
+                    if (!isPlayableSquare(row, col)) {
+                        square.classList.add('non-playable');
+                    }
                     
                     // Add special square classes
                     if (row >= 1 && row <= 2 && col >= 1 && col <= 2) {
