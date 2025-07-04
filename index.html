@@ -127,6 +127,9 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
             transition: all 0.3s ease;
             cursor: pointer;
+            position: absolute;
+            top: 10%;
+            left: 10%;
         }
 
         .piece:hover {
@@ -505,6 +508,19 @@
                         const pos = getSquarePosition(color, piece.pos);
                         if (pos) {
                             const square = document.getElementById(`square-${pos[0]}-${pos[1]}`);
+                            
+                            // Check how many pieces are already in this square
+                            const existingPieces = square.querySelectorAll('.piece');
+                            const pieceCount = existingPieces.length;
+                            
+                            // Apply offset based on piece count to make multiple pieces visible
+                            if (pieceCount > 0) {
+                                const offsetX = (pieceCount % 2) * 15; // Horizontal offset
+                                const offsetY = Math.floor(pieceCount / 2) * 15; // Vertical offset
+                                pieceElement.style.left = `${10 + offsetX}%`;
+                                pieceElement.style.top = `${10 + offsetY}%`;
+                            }
+                            
                             square.appendChild(pieceElement);
                         }
                     }
