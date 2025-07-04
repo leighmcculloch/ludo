@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Animation Test</title>
+    <style>
+        body { margin: 50px; font-family: Arial; }
+        .board { display: grid; grid-template-columns: repeat(5, 60px); gap: 5px; margin: 20px; }
+        .square { width: 60px; height: 60px; background: #f0f0f0; border: 1px solid #ccc; position: relative; }
+        .piece { 
+            width: 80%; 
+            height: 80%; 
+            background: #27ae60; 
+            border-radius: 50%; 
+            position: absolute; 
+            top: 10%; 
+            left: 10%; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .piece:hover { transform: scale(1.1); }
+        .piece.selectable { animation: pulse 1s infinite; }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .controls { margin: 20px; }
+        button { padding: 10px 20px; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Animation Test</h1>
+    <div class="board">
+        <div class="square" id="square-0"></div>
+        <div class="square" id="square-1"></div>
+        <div class="square" id="square-2"></div>
+        <div class="square" id="square-3"></div>
+        <div class="square" id="square-4">
+            <div class="piece selectable" id="piece-1" onclick="movePiece()">1</div>
+        </div>
+    </div>
+    <div class="controls">
+        <button onclick="movePiece()">Move Piece (User Click)</button>
+        <button onclick="setTimeout(movePiece, 1000)">Move Piece (Auto with 1s delay)</button>
+        <button onclick="resetPiece()">Reset Piece</button>
+    </div>
+    <div id="status">Click the piece or buttons to test animation</div>
+    
+    <script>
+        function movePiece() {
+            console.log('movePiece called');
+            const piece = document.getElementById('piece-1');
+            const destination = document.getElementById('square-1');
+            
+            // Clear existing transitions and animations
+            piece.style.transition = 'none';
+            piece.style.transform = '';
+            piece.style.animation = 'none';
+            piece.classList.remove('selectable');
+            
+            // Force reflow
+            piece.offsetHeight;
+            
+            // Get positions
+            const currentRect = piece.getBoundingClientRect();
+            const destRect = destination.getBoundingClientRect();
+            const deltaX = destRect.left - currentRect.left;
+            const deltaY = destRect.top - currentRect.top;
+            
+            console.log(`Moving piece from (${currentRect.left}, ${currentRect.top}) to (${destRect.left}, ${destRect.top}), delta: (${deltaX}, ${deltaY})`);
+            
+            // Apply animation
+            piece.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+            piece.style.transition = 'transform 0.6s ease-in-out';
+            piece.style.zIndex = '1000';
+            
+            // After animation, move piece to new square
+            setTimeout(() => {
+                piece.style.transform = '';
+                piece.style.transition = '';
+                piece.style.zIndex = '';
+                destination.appendChild(piece);
+                document.getElementById('status').textContent = 'Animation completed!';
+            }, 600);
+        }
+        
+        function resetPiece() {
+            const piece = document.getElementById('piece-1');
+            const originalSquare = document.getElementById('square-4');
+            piece.style.transform = '';
+            piece.style.transition = '';
+            piece.style.zIndex = '';
+            piece.style.animation = '';
+            piece.classList.add('selectable');
+            originalSquare.appendChild(piece);
+            document.getElementById('status').textContent = 'Piece reset to original position';
+        }
+    </script>
+</body>
+</html>

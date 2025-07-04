@@ -732,14 +732,24 @@
         
         // Select piece to move
         function selectPiece(color, pieceId) {
+            console.log(`selectPiece called: ${color} piece ${pieceId}`);
             if (color !== playerColors[currentPlayer] || !canMovePiece(color, pieceId)) {
+                console.log(`Invalid selection: current player is ${playerColors[currentPlayer]}, canMove: ${canMovePiece(color, pieceId)}`);
                 return;
             }
             
-            // Add small delay to ensure DOM is ready for animation, similar to automated moves
+            console.log(`Valid selection, moving piece after delay...`);
+            
+            // Clear all piece animations first to ensure clean state
+            document.querySelectorAll('.piece').forEach(piece => {
+                piece.style.animation = 'none';
+                piece.classList.remove('selectable');
+            });
+            
+            // Add delay to ensure DOM is ready for animation
             setTimeout(() => {
                 movePiece(color, pieceId);
-            }, 100);
+            }, 300);
         }
         
         // Animate piece movement
@@ -750,63 +760,78 @@
                 return;
             }
             
-            // Get the destination square position
-            let destinationSquare;
-            if (toPos === 'center') {
-                destinationSquare = document.getElementById('square-7-7');
-            } else if (toPos === null) {
-                // Moving to home - find the appropriate home square
-                const homePositions = homeSquares[color];
-                const availableHomePos = homePositions.find(pos => {
-                    const square = document.getElementById(`square-${pos[0]}-${pos[1]}`);
-                    return !square.querySelector('.piece');
-                });
-                if (availableHomePos) {
-                    destinationSquare = document.getElementById(`square-${availableHomePos[0]}-${availableHomePos[1]}`);
-                }
-            } else if (typeof toPos === 'number') {
-                const squarePos = getSquarePosition(color, toPos);
-                if (squarePos) {
-                    destinationSquare = document.getElementById(`square-${squarePos[0]}-${squarePos[1]}`);
-                }
-            }
+            // Clear any existing transitions, animations, and CSS effects to ensure clean state
+            pieceElement.style.transition = 'none';
+            pieceElement.style.transform = '';
+            pieceElement.style.animation = 'none';
+            pieceElement.style.zIndex = '';
+            pieceElement.classList.remove('selectable');
             
-            if (!destinationSquare) {
-                // If we can't find destination, just call callback immediately
-                callback();
-                return;
-            }
+            // Force a reflow to ensure all style changes are applied
+            pieceElement.offsetHeight;
             
-            // Get current and destination positions
-            const currentRect = pieceElement.getBoundingClientRect();
-            const destRect = destinationSquare.getBoundingClientRect();
-            
-            // Calculate the translation needed
-            const deltaX = destRect.left - currentRect.left;
-            const deltaY = destRect.top - currentRect.top;
-            
-            // Only animate if there's actual movement
-            if (Math.abs(deltaX) < 1 && Math.abs(deltaY) < 1) {
-                callback();
-                return;
-            }
-            
-            // Add animation styles
-            pieceElement.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-            pieceElement.style.transition = 'transform 0.6s ease-in-out';
-            pieceElement.style.zIndex = '1000';
-            
-            // After animation completes, reset and update game state
+            // Wait a moment to ensure the DOM is fully settled
             setTimeout(() => {
-                pieceElement.style.transform = '';
-                pieceElement.style.transition = '';
-                pieceElement.style.zIndex = '';
-                callback();
-            }, 600);
+                // Get the destination square position
+                let destinationSquare;
+                if (toPos === 'center') {
+                    destinationSquare = document.getElementById('square-7-7');
+                } else if (toPos === null) {
+                    // Moving to home - find the appropriate home square
+                    const homePositions = homeSquares[color];
+                    const availableHomePos = homePositions.find(pos => {
+                        const square = document.getElementById(`square-${pos[0]}-${pos[1]}`);
+                        return !square.querySelector('.piece');
+                    });
+                    if (availableHomePos) {
+                        destinationSquare = document.getElementById(`square-${availableHomePos[0]}-${availableHomePos[1]}`);
+                    }
+                } else if (typeof toPos === 'number') {
+                    const squarePos = getSquarePosition(color, toPos);
+                    if (squarePos) {
+                        destinationSquare = document.getElementById(`square-${squarePos[0]}-${squarePos[1]}`);
+                    }
+                }
+                
+                if (!destinationSquare) {
+                    // If we can't find destination, just call callback immediately
+                    callback();
+                    return;
+                }
+                
+                // Get current and destination positions
+                const currentRect = pieceElement.getBoundingClientRect();
+                const destRect = destinationSquare.getBoundingClientRect();
+                
+                // Calculate the translation needed
+                const deltaX = destRect.left - currentRect.left;
+                const deltaY = destRect.top - currentRect.top;
+                
+                // Only animate if there's actual movement
+                if (Math.abs(deltaX) < 1 && Math.abs(deltaY) < 1) {
+                    callback();
+                    return;
+                }
+                
+                // Add animation styles
+                pieceElement.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                pieceElement.style.transition = 'transform 0.6s ease-in-out';
+                pieceElement.style.zIndex = '1000';
+                
+                // After animation completes, reset and update game state
+                setTimeout(() => {
+                    pieceElement.style.transform = '';
+                    pieceElement.style.transition = '';
+                    pieceElement.style.zIndex = '';
+                    pieceElement.style.animation = '';
+                    callback();
+                }, 600);
+            }, 50);
         }
         
         // Move piece
         function movePiece(color, pieceId) {
+            console.log(`movePiece called: ${color} piece ${pieceId}`);
             const piece = pieces[color].find(p => p.id === pieceId);
             if (!piece) return;
             
@@ -816,8 +841,10 @@
             // Store original position for animation
             const originalPos = piece.pos;
             
+            console.log(`Starting animation from ${originalPos} to ${newPos}`);
             // Start the animation
             animatePieceMovement(color, pieceId, originalPos, newPos, () => {
+                console.log(`Animation completed, updating game state`);
                 // This callback runs after animation completes
                 
                 // Check for captures
