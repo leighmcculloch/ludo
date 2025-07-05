@@ -1,10 +1,10 @@
-# Junior Ludo Game
+# Ludo Game
 
-A static website implementation of Junior Ludo that four players can use on a shared device.
+A static website implementation of Ludo that four players can use on a shared device.
 
 ## Features
 
-- 🎲 Complete Junior Ludo game for 4 players
+- 🎲 Complete Ludo game for 4 players
 - 🤖 Automatic move detection when only one valid action is available
 - 🎯 Turn-based gameplay on a shared device
 - 📱 Responsive design that works on mobile and desktop
@@ -19,7 +19,7 @@ A static website implementation of Junior Ludo that four players can use on a sh
 4. **Capture Opponents**: Land on opponent pieces to send them back home
 5. **Win the Game**: Get all 4 pieces to the center to win!
 
-### Junior Ludo Rules
+### Ludo Rules
 
 - Each player has 4 pieces starting in their home area
 - Roll a 6 to move pieces out of home onto the board
