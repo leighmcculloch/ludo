@@ -736,7 +736,93 @@
                 return;
             }
             
-            movePiece(color, pieceId);
+            // Clear all piece animations first to ensure clean state
+            document.querySelectorAll('.piece').forEach(piece => {
+                piece.style.animation = 'none';
+                piece.classList.remove('selectable');
+            });
+            
+            // Add delay to ensure DOM is ready for animation
+            setTimeout(() => {
+                movePiece(color, pieceId);
+            }, 300);
+        }
+        
+        // Animate piece movement
+        function animatePieceMovement(color, pieceId, fromPos, toPos, callback) {
+            const pieceElement = document.querySelector(`[data-piece-id="${pieceId}"]`);
+            if (!pieceElement) {
+                callback();
+                return;
+            }
+            
+            // Clear any existing transitions, animations, and CSS effects to ensure clean state
+            pieceElement.style.transition = 'none';
+            pieceElement.style.transform = '';
+            pieceElement.style.animation = 'none';
+            pieceElement.style.zIndex = '';
+            pieceElement.classList.remove('selectable');
+            
+            // Force a reflow to ensure all style changes are applied
+            pieceElement.offsetHeight;
+            
+            // Wait a moment to ensure the DOM is fully settled
+            setTimeout(() => {
+                // Get the destination square position
+                let destinationSquare;
+                if (toPos === 'center') {
+                    destinationSquare = document.getElementById('square-7-7');
+                } else if (toPos === null) {
+                    // Moving to home - find the appropriate home square
+                    const homePositions = homeSquares[color];
+                    const availableHomePos = homePositions.find(pos => {
+                        const square = document.getElementById(`square-${pos[0]}-${pos[1]}`);
+                        return !square.querySelector('.piece');
+                    });
+                    if (availableHomePos) {
+                        destinationSquare = document.getElementById(`square-${availableHomePos[0]}-${availableHomePos[1]}`);
+                    }
+                } else if (typeof toPos === 'number') {
+                    const squarePos = getSquarePosition(color, toPos);
+                    if (squarePos) {
+                        destinationSquare = document.getElementById(`square-${squarePos[0]}-${squarePos[1]}`);
+                    }
+                }
+                
+                if (!destinationSquare) {
+                    // If we can't find destination, just call callback immediately
+                    callback();
+                    return;
+                }
+                
+                // Get current and destination positions
+                const currentRect = pieceElement.getBoundingClientRect();
+                const destRect = destinationSquare.getBoundingClientRect();
+                
+                // Calculate the translation needed
+                const deltaX = destRect.left - currentRect.left;
+                const deltaY = destRect.top - currentRect.top;
+                
+                // Only animate if there's actual movement
+                if (Math.abs(deltaX) < 1 && Math.abs(deltaY) < 1) {
+                    callback();
+                    return;
+                }
+                
+                // Add animation styles
+                pieceElement.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                pieceElement.style.transition = 'transform 0.6s ease-in-out';
+                pieceElement.style.zIndex = '1000';
+                
+                // After animation completes, reset and update game state
+                setTimeout(() => {
+                    pieceElement.style.transform = '';
+                    pieceElement.style.transition = '';
+                    pieceElement.style.zIndex = '';
+                    pieceElement.style.animation = '';
+                    callback();
+                }, 600);
+            }, 50);
         }
         
         // Move piece
@@ -747,59 +833,67 @@
             const newPos = calculateNewPosition(color, piece.pos, diceValue);
             if (newPos === null) return;
             
-            // Check for captures
-            if (newPos !== 'center' && typeof newPos === 'number') {
-                const squarePos = getSquarePosition(color, newPos);
-                if (squarePos) {
-                    const square = document.getElementById(`square-${squarePos[0]}-${squarePos[1]}`);
-                    const existingPiece = square.querySelector('.piece');
-                    if (existingPiece && existingPiece.dataset.color !== color) {
-                        // Capture opponent piece
-                        const capturedColor = existingPiece.dataset.color;
-                        const capturedPieceId = existingPiece.dataset.pieceId;
-                        const capturedPiece = pieces[capturedColor].find(p => p.id === capturedPieceId);
-                        if (capturedPiece) {
-                            capturedPiece.pos = null;
-                            capturedPiece.home = true;
+            // Store original position for animation
+            const originalPos = piece.pos;
+            
+            // Start the animation
+            animatePieceMovement(color, pieceId, originalPos, newPos, () => {
+                // This callback runs after animation completes
+                
+                // Check for captures
+                if (newPos !== 'center' && typeof newPos === 'number') {
+                    const squarePos = getSquarePosition(color, newPos);
+                    if (squarePos) {
+                        const square = document.getElementById(`square-${squarePos[0]}-${squarePos[1]}`);
+                        const existingPiece = square.querySelector('.piece');
+                        if (existingPiece && existingPiece.dataset.color !== color) {
+                            // Capture opponent piece
+                            const capturedColor = existingPiece.dataset.color;
+                            const capturedPieceId = existingPiece.dataset.pieceId;
+                            const capturedPiece = pieces[capturedColor].find(p => p.id === capturedPieceId);
+                            if (capturedPiece) {
+                                capturedPiece.pos = null;
+                                capturedPiece.home = true;
+                            }
+                            existingPiece.remove();
                         }
-                        existingPiece.remove();
                     }
                 }
-            }
-            
-            // Update piece position
-            piece.pos = newPos;
-            piece.home = false;
-            
-            // Re-place pieces
-            placePieces();
-            
-            // Check for win
-            if (checkWin(color)) {
-                endGame(color);
-                return;
-            }
-            
-            // Clear highlights
-            document.querySelectorAll('.piece').forEach(piece => {
-                piece.classList.remove('selectable');
-            });
-            
-            // Check if player gets another turn (rolled 6)
-            if (diceValue === 6) {
-                canRollDice = true;
-                document.getElementById('rollButton').disabled = false;
-                document.getElementById('gameInfo').textContent = 'Auto-rolling again (you got a 6)...';
                 
-                // Auto-roll again after getting a 6
-                setTimeout(() => {
-                    if (canRollDice && !gameEnded) {
-                        rollDice();
-                    }
-                }, 1000);
-            } else {
-                nextPlayer();
-            }
+                // Update piece position
+                piece.pos = newPos;
+                piece.home = false;
+                
+                // Re-place pieces
+                placePieces();
+                
+                // Check for win
+                if (checkWin(color)) {
+                    endGame(color);
+                    return;
+                }
+                
+                // Clear highlights
+                document.querySelectorAll('.piece').forEach(piece => {
+                    piece.classList.remove('selectable');
+                });
+                
+                // Check if player gets another turn (rolled 6)
+                if (diceValue === 6) {
+                    canRollDice = true;
+                    document.getElementById('rollButton').disabled = false;
+                    document.getElementById('gameInfo').textContent = 'Auto-rolling again (you got a 6)...';
+                    
+                    // Auto-roll again after getting a 6
+                    setTimeout(() => {
+                        if (canRollDice && !gameEnded) {
+                            rollDice();
+                        }
+                    }, 1000);
+                } else {
+                    nextPlayer();
+                }
+            });
         }
         
         // Check if player has won
