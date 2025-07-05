@@ -986,10 +986,13 @@
             let newPos = currentPos + moves;
             
             // Check if should enter home path
-            const homePathStart = startPositions[color] + 51;
-            if (currentPos < homePathStart && newPos >= homePathStart) {
-                // Enter home path
-                const homePathIndex = newPos - homePathStart;
+            // A piece can only enter home path if it's at the correct entrance position
+            const homePathEntrancePos = (startPositions[color] + 51) % boardPath.length;
+            
+            // Check if the piece is at the home entrance position
+            if (currentPos === homePathEntrancePos) {
+                // Piece is at home entrance, move into home path
+                const homePathIndex = moves - 1; // First move takes us to the first home path position
                 if (homePathIndex < homePaths[color].length) {
                     return boardPath.length + homePathIndex;
                 } else if (homePathIndex === homePaths[color].length) {
@@ -999,20 +1002,12 @@
                 }
             }
             
-            // Normal board movement
+            // Handle normal board movement with wrapping
             if (newPos >= boardPath.length) {
-                // Check if in home path
-                const homePathIndex = newPos - boardPath.length;
-                if (homePathIndex < homePaths[color].length) {
-                    return boardPath.length + homePathIndex;
-                } else if (homePathIndex === homePaths[color].length) {
-                    return 'center';
-                } else {
-                    return null; // Overshoot
-                }
+                newPos = newPos % boardPath.length;
             }
             
-            return newPos % boardPath.length;
+            return newPos;
         }
         
         // Highlight movable pieces
