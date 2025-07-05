@@ -302,6 +302,30 @@
             box-shadow: 0 6px 16px rgba(231, 76, 60, 0.4), 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
+        .links-section {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .links-section a {
+            color: #3498db;
+            text-decoration: none;
+            margin: 0 10px;
+            padding: 5px 10px;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .links-section a:hover {
+            background: #f8f9fa;
+            color: #2980b9;
+            text-decoration: underline;
+        }
+
         @media (max-width: 768px) {
             .game-board {
                 max-width: 90vw;
@@ -342,6 +366,11 @@
         <div id="winner" class="winner" style="display: none;"></div>
         
         <button class="reset-button" id="resetButton" onclick="resetGame()">New Game</button>
+        
+        <div class="links-section">
+            <a href="https://github.com/leighmcculloch/ludo" target="_blank">📂 View Source Code</a>
+            <a href="https://en.wikipedia.org/wiki/Ludo" target="_blank">📖 Learn the Rules</a>
+        </div>
     </div>
 
     <script>
