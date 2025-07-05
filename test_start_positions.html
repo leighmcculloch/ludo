@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Start Positions Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+        }
+        .pass { color: #27ae60; font-weight: bold; }
+        .fail { color: #e74c3c; font-weight: bold; }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .test-result.pass {
+            background-color: #d5f4e6;
+            border: 1px solid #27ae60;
+        }
+        .test-result.fail {
+            background-color: #fceaea;
+            border: 1px solid #e74c3c;
+        }
+        .position-info {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Start Positions Test</h1>
+    <div class="test-container">
+        <h2>Testing Start Position Consistency</h2>
+        <div id="test-results"></div>
+        <div id="position-details"></div>
+    </div>
+
+    <script>
+        function addTestResult(container, testName, passed) {
+            const result = document.createElement('div');
+            result.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            result.innerHTML = `<span class="${passed ? 'pass' : 'fail'}">${passed ? '✓' : '✗'}</span> ${testName}`;
+            container.appendChild(result);
+        }
+
+        function runTests() {
+            const resultsDiv = document.getElementById('test-results');
+            const detailsDiv = document.getElementById('position-details');
+            
+            // Load the main HTML file content via fetch to check start positions
+            fetch('/index.html')
+                .then(response => response.text())
+                .then(html => {
+                    // Extract the board path and start positions from the HTML
+                    const boardPathMatch = html.match(/const boardPath = \[([\s\S]*?)\];/);
+                    const startPositionsMatch = html.match(/const startPositions = \{([\s\S]*?)\};/);
+                    
+                    if (!boardPathMatch || !startPositionsMatch) {
+                        addTestResult(resultsDiv, 'Could not extract board data', false);
+                        return;
+                    }
+                    
+                    // Parse the board path
+                    const boardPathStr = boardPathMatch[1];
+                    const boardPath = eval('[' + boardPathStr + ']');
+                    
+                    // Parse start positions
+                    const startPositionsStr = startPositionsMatch[1];
+                    const startPositions = eval('{' + startPositionsStr + '}');
+                    
+                    // Display current positions
+                    detailsDiv.innerHTML = `
+                        <div class="position-info">
+                            <h3>Current Start Positions:</h3>
+                            <p><strong>Red:</strong> Position ${startPositions.red} → ${JSON.stringify(boardPath[startPositions.red])}</p>
+                            <p><strong>Blue:</strong> Position ${startPositions.blue} → ${JSON.stringify(boardPath[startPositions.blue])}</p>
+                            <p><strong>Green:</strong> Position ${startPositions.green} → ${JSON.stringify(boardPath[startPositions.green])}</p>
+                            <p><strong>Yellow:</strong> Position ${startPositions.yellow} → ${JSON.stringify(boardPath[startPositions.yellow])}</p>
+                        </div>
+                        <div class="position-info">
+                            <h3>Expected Positions (One Square Away from Corner):</h3>
+                            <p><strong>Red:</strong> Position 1 → ${JSON.stringify(boardPath[1])}</p>
+                            <p><strong>Blue:</strong> Position 14 → ${JSON.stringify(boardPath[14])}</p>
+                            <p><strong>Green:</strong> Position 28 → ${JSON.stringify(boardPath[28])}</p>
+                            <p><strong>Yellow:</strong> Position 42 → ${JSON.stringify(boardPath[42])}</p>
+                        </div>
+                    `;
+                    
+                    // Test 1: Check if all colors start one square away from corner in direction of travel
+                    const redStartsCorrect = startPositions.red === 1;
+                    const blueStartsCorrect = startPositions.blue === 14;
+                    const greenStartsCorrect = startPositions.green === 28;
+                    const yellowStartsCorrect = startPositions.yellow === 42;
+                    
+                    addTestResult(resultsDiv, 'Red starts one square away from corner (position 1)', redStartsCorrect);
+                    addTestResult(resultsDiv, 'Blue starts one square away from corner (position 14)', blueStartsCorrect);
+                    addTestResult(resultsDiv, 'Green starts one square away from corner (position 28)', greenStartsCorrect);
+                    addTestResult(resultsDiv, 'Yellow starts one square away from corner (position 42)', yellowStartsCorrect);
+                    
+                    // Test 2: Check overall consistency
+                    const allStartCorrect = redStartsCorrect && blueStartsCorrect && greenStartsCorrect && yellowStartsCorrect;
+                    addTestResult(resultsDiv, 'All colors start one square away from corner in direction of travel', allStartCorrect);
+                    
+                    // Test 3: Check specific board positions
+                    const redPosition = boardPath[startPositions.red];
+                    const bluePosition = boardPath[startPositions.blue];
+                    const greenPosition = boardPath[startPositions.green];
+                    const yellowPosition = boardPath[startPositions.yellow];
+                    
+                    // Expected positions one square away from corner in direction of travel
+                    const expectedRedPosition = [6, 2];
+                    const expectedBluePosition = [1, 8];
+                    const expectedGreenPosition = [8, 13];
+                    const expectedYellowPosition = [13, 6];
+                    
+                    const redPositionCorrect = JSON.stringify(redPosition) === JSON.stringify(expectedRedPosition);
+                    const bluePositionCorrect = JSON.stringify(bluePosition) === JSON.stringify(expectedBluePosition);
+                    const greenPositionCorrect = JSON.stringify(greenPosition) === JSON.stringify(expectedGreenPosition);
+                    const yellowPositionCorrect = JSON.stringify(yellowPosition) === JSON.stringify(expectedYellowPosition);
+                    
+                    addTestResult(resultsDiv, `Red position correct: ${JSON.stringify(redPosition)}`, redPositionCorrect);
+                    addTestResult(resultsDiv, `Blue position correct: ${JSON.stringify(bluePosition)}`, bluePositionCorrect);
+                    addTestResult(resultsDiv, `Green position correct: ${JSON.stringify(greenPosition)}`, greenPositionCorrect);
+                    addTestResult(resultsDiv, `Yellow position correct: ${JSON.stringify(yellowPosition)}`, yellowPositionCorrect);
+                })
+                .catch(error => {
+                    addTestResult(resultsDiv, 'Could not load HTML file', false);
+                    console.error('Error:', error);
+                });
+        }
+
+        // Run tests when page loads
+        window.addEventListener('load', runTests);
+    </script>
+</body>
+</html>
