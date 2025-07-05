@@ -50,6 +50,7 @@
             max-width: 600px;
             margin: 0 auto;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
         }
 
         .square {
@@ -380,6 +381,42 @@
             background: #999 !important;
         }
 
+        /* Trail lines */
+        .trail-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .trail-line {
+            position: absolute;
+            border-radius: 2px;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 5;
+        }
+
+        .trail-line.red { background: rgba(231, 76, 60, 0.8); }
+        .trail-line.blue { background: rgba(52, 152, 219, 0.8); }
+        .trail-line.green { background: rgba(39, 174, 96, 0.8); }
+        .trail-line.yellow { background: rgba(241, 196, 15, 0.8); }
+
+        /* Trail segments with different opacity based on age */
+        .trail-segment-0 { opacity: 0.8; }
+        .trail-segment-1 { opacity: 0.7; }
+        .trail-segment-2 { opacity: 0.6; }
+        .trail-segment-3 { opacity: 0.5; }
+        .trail-segment-4 { opacity: 0.4; }
+        .trail-segment-5 { opacity: 0.3; }
+        .trail-segment-6 { opacity: 0.2; }
+        .trail-segment-7 { opacity: 0.1; }
+        .trail-segment-8 { opacity: 0.05; }
+        .trail-segment-9 { opacity: 0.02; }
+
         @media (max-width: 768px) {
             .game-board {
                 max-width: 90vw;
@@ -461,10 +498,10 @@
         // Board configuration
         const boardSize = 15;
         const pieces = {
-            red: [{ id: 'r1', pos: null, home: true }, { id: 'r2', pos: null, home: true }, { id: 'r3', pos: null, home: true }, { id: 'r4', pos: null, home: true }],
-            blue: [{ id: 'b1', pos: null, home: true }, { id: 'b2', pos: null, home: true }, { id: 'b3', pos: null, home: true }, { id: 'b4', pos: null, home: true }],
-            green: [{ id: 'g1', pos: null, home: true }, { id: 'g2', pos: null, home: true }, { id: 'g3', pos: null, home: true }, { id: 'g4', pos: null, home: true }],
-            yellow: [{ id: 'y1', pos: null, home: true }, { id: 'y2', pos: null, home: true }, { id: 'y3', pos: null, home: true }, { id: 'y4', pos: null, home: true }]
+            red: [{ id: 'r1', pos: null, home: true, trail: [] }, { id: 'r2', pos: null, home: true, trail: [] }, { id: 'r3', pos: null, home: true, trail: [] }, { id: 'r4', pos: null, home: true, trail: [] }],
+            blue: [{ id: 'b1', pos: null, home: true, trail: [] }, { id: 'b2', pos: null, home: true, trail: [] }, { id: 'b3', pos: null, home: true, trail: [] }, { id: 'b4', pos: null, home: true, trail: [] }],
+            green: [{ id: 'g1', pos: null, home: true, trail: [] }, { id: 'g2', pos: null, home: true, trail: [] }, { id: 'g3', pos: null, home: true, trail: [] }, { id: 'g4', pos: null, home: true, trail: [] }],
+            yellow: [{ id: 'y1', pos: null, home: true, trail: [] }, { id: 'y2', pos: null, home: true, trail: [] }, { id: 'y3', pos: null, home: true, trail: [] }, { id: 'y4', pos: null, home: true, trail: [] }]
         };
         
         // Board path positions (clockwise around the board)
@@ -622,6 +659,12 @@
                 }
             }
             
+            // Add trail container for drawing piece trails
+            const trailContainer = document.createElement('div');
+            trailContainer.className = 'trail-container';
+            trailContainer.id = 'trailContainer';
+            board.appendChild(trailContainer);
+            
             // Place initial pieces
             placePieces();
         }
@@ -690,6 +733,122 @@
             }
             
             return null;
+        }
+        
+        // Draw trails for all pieces
+        function drawTrails() {
+            const trailContainer = document.getElementById('trailContainer');
+            if (!trailContainer) return;
+            
+            console.log('Drawing trails...');
+            
+            // Clear existing trails
+            trailContainer.innerHTML = '';
+            
+            // Draw trails for each player's pieces
+            Object.keys(pieces).forEach(color => {
+                pieces[color].forEach(piece => {
+                    if (piece.trail && piece.trail.length > 1) {
+                        console.log(`Drawing trail for piece ${piece.id} with ${piece.trail.length} positions`);
+                        drawPieceTrail(piece, color);
+                    }
+                });
+            });
+        }
+        
+        // Draw trail for a specific piece
+        function drawPieceTrail(piece, color) {
+            const trailContainer = document.getElementById('trailContainer');
+            if (!trailContainer || !piece.trail || piece.trail.length < 2) return;
+            
+            console.log(`Drawing trail for piece ${piece.id} of color ${color}`);
+            
+            const maxTrailLength = 10; // Maximum number of trail segments to show
+            const recentTrail = piece.trail.slice(-maxTrailLength);
+            
+            // Draw lines connecting each position in the trail
+            for (let i = 0; i < recentTrail.length - 1; i++) {
+                const fromPos = getSquarePosition(color, recentTrail[i]);
+                const toPos = getSquarePosition(color, recentTrail[i + 1]);
+                
+                console.log(`Trail segment ${i}: from ${recentTrail[i]} to ${recentTrail[i + 1]}`);
+                console.log(`Positions: from [${fromPos}] to [${toPos}]`);
+                
+                if (fromPos && toPos) {
+                    const line = createTrailLine(fromPos, toPos, color, recentTrail.length - 1 - i);
+                    trailContainer.appendChild(line);
+                    console.log(`Created trail line element`);
+                }
+            }
+        }
+        
+        // Create a trail line element between two positions
+        function createTrailLine(fromPos, toPos, color, age) {
+            const line = document.createElement('div');
+            line.className = `trail-line ${color} trail-segment-${Math.min(age, 9)}`;
+            
+            // Calculate line position and rotation
+            const board = document.getElementById('gameBoard');
+            const boardRect = board.getBoundingClientRect();
+            const gridGap = 2; // From CSS gap: 2px
+            const padding = 10; // From CSS padding: 10px
+            
+            // Calculate square size accounting for gaps
+            const totalGapWidth = gridGap * (boardSize - 1);
+            const availableWidth = boardRect.width - (padding * 2) - totalGapWidth;
+            const squareSize = availableWidth / boardSize;
+            
+            // Calculate positions relative to the board container
+            const fromX = fromPos[1] * (squareSize + gridGap) + squareSize / 2 + padding;
+            const fromY = fromPos[0] * (squareSize + gridGap) + squareSize / 2 + padding;
+            const toX = toPos[1] * (squareSize + gridGap) + squareSize / 2 + padding;
+            const toY = toPos[0] * (squareSize + gridGap) + squareSize / 2 + padding;
+            
+            const deltaX = toX - fromX;
+            const deltaY = toY - fromY;
+            const length = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+            
+            line.style.left = fromX + 'px';
+            line.style.top = fromY + 'px';
+            line.style.width = length + 'px';
+            line.style.height = '4px'; // Make it a bit thicker for visibility
+            line.style.transformOrigin = '0 50%';
+            line.style.transform = `rotate(${angle}deg)`;
+            line.style.backgroundColor = color === 'red' ? 'rgba(231, 76, 60, 0.8)' : 
+                                        color === 'blue' ? 'rgba(52, 152, 219, 0.8)' :
+                                        color === 'green' ? 'rgba(39, 174, 96, 0.8)' :
+                                        'rgba(241, 196, 15, 0.8)';
+            
+            console.log(`Trail line: from (${fromX}, ${fromY}) to (${toX}, ${toY}), length: ${length}, angle: ${angle}, squareSize: ${squareSize}`);
+            
+            return line;
+        }
+        
+        // Update trail for a piece when it moves
+        function updatePieceTrail(piece, newPos) {
+            if (!piece.trail) {
+                piece.trail = [];
+            }
+            
+            // Don't add duplicate positions
+            if (piece.trail.length === 0 || piece.trail[piece.trail.length - 1] !== newPos) {
+                piece.trail.push(newPos);
+                console.log(`Updated trail for piece ${piece.id}: [${piece.trail.join(', ')}]`);
+                
+                // Limit trail length to prevent memory issues
+                const maxTrailLength = 20;
+                if (piece.trail.length > maxTrailLength) {
+                    piece.trail = piece.trail.slice(-maxTrailLength);
+                }
+            }
+        }
+        
+        // Clear trail for a piece (when captured or reset)
+        function clearPieceTrail(piece) {
+            if (piece.trail) {
+                piece.trail = [];
+            }
         }
         
         // Setup event listeners
@@ -996,6 +1155,8 @@
                             if (capturedPiece) {
                                 capturedPiece.pos = null;
                                 capturedPiece.home = true;
+                                // Clear the captured piece's trail
+                                clearPieceTrail(capturedPiece);
                             }
                             existingPiece.remove();
                         }
@@ -1006,8 +1167,21 @@
                 piece.pos = newPos;
                 piece.home = false;
                 
+                // Update the piece's trail
+                if (originalPos !== null) {
+                    // Moving from a board position - add the original position to trail
+                    updatePieceTrail(piece, originalPos);
+                } else {
+                    // Moving from home - start new trail
+                    clearPieceTrail(piece);
+                }
+                updatePieceTrail(piece, newPos);
+                
                 // Re-place pieces
                 placePieces();
+                
+                // Draw trails after placing pieces
+                drawTrails();
                 
                 // Check for win
                 if (checkWin(color)) {
@@ -1115,6 +1289,8 @@
                 pieces[color].forEach(piece => {
                     piece.pos = null;
                     piece.home = true;
+                    // Clear trails
+                    clearPieceTrail(piece);
                 });
             });
             
