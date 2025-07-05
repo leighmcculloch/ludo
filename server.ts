@@ -20,7 +20,7 @@ async function handler(request: Request): Promise<Response> {
   return new Response("Not found", { status: 404 });
 }
 
-console.log(`🎲 Junior Ludo Game Server starting on http://localhost:${PORT}`);
+console.log(`🎲 Ludo Game Server starting on http://localhost:${PORT}`);
 console.log(`📁 Serving index.html from current directory`);
 console.log(`🚀 Open http://localhost:${PORT} in your browser to play!`);
 
