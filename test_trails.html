@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trail Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .board { width: 300px; height: 300px; border: 2px solid #333; position: relative; margin: 20px 0; }
+        .square { 
+            position: absolute; 
+            width: 20px; 
+            height: 20px; 
+            border: 1px solid #ccc; 
+            background: #f0f0f0;
+        }
+        .piece {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: red;
+            color: white;
+            font-size: 10px;
+            text-align: center;
+            line-height: 18px;
+            z-index: 10;
+        }
+        .trail-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .trail-line {
+            position: absolute;
+            background: rgba(231, 76, 60, 0.6);
+            height: 3px;
+            pointer-events: none;
+        }
+        button { margin: 5px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Trail System Test</h1>
+    <div class="board" id="board">
+        <div class="trail-container" id="trailContainer"></div>
+        <div class="piece" id="piece" style="left: 50px; top: 50px;">1</div>
+    </div>
+    
+    <button onclick="movePiece()">Move Piece</button>
+    <button onclick="clearTrails()">Clear Trails</button>
+    
+    <script>
+        let trail = [[50, 50]];
+        let currentPos = 0;
+        
+        function movePiece() {
+            const positions = [
+                [50, 50], [100, 50], [150, 50], [200, 50], [200, 100], 
+                [200, 150], [150, 150], [100, 150], [50, 150], [50, 100]
+            ];
+            
+            currentPos = (currentPos + 1) % positions.length;
+            const newPos = positions[currentPos];
+            
+            // Update piece position
+            const piece = document.getElementById('piece');
+            piece.style.left = newPos[0] + 'px';
+            piece.style.top = newPos[1] + 'px';
+            
+            // Add to trail
+            trail.push(newPos);
+            
+            // Draw trail
+            drawTrail();
+        }
+        
+        function drawTrail() {
+            const container = document.getElementById('trailContainer');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < trail.length - 1; i++) {
+                const from = trail[i];
+                const to = trail[i + 1];
+                
+                const line = document.createElement('div');
+                line.className = 'trail-line';
+                
+                const deltaX = to[0] - from[0];
+                const deltaY = to[1] - from[1];
+                const length = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+                
+                line.style.left = from[0] + 'px';
+                line.style.top = from[1] + 'px';
+                line.style.width = length + 'px';
+                line.style.transform = `rotate(${angle}deg)`;
+                line.style.transformOrigin = '0 50%';
+                line.style.opacity = Math.max(0.1, (i + 1) / trail.length);
+                
+                container.appendChild(line);
+            }
+        }
+        
+        function clearTrails() {
+            trail = [trail[trail.length - 1]]; // Keep only current position
+            drawTrail();
+        }
+    </script>
+</body>
+</html>
