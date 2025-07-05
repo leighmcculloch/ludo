@@ -90,28 +90,28 @@
                             <p><strong>Yellow:</strong> Position ${startPositions.yellow} → ${JSON.stringify(boardPath[startPositions.yellow])}</p>
                         </div>
                         <div class="position-info">
-                            <h3>Expected Corner Positions:</h3>
-                            <p><strong>Red Corner:</strong> Position 0 → ${JSON.stringify(boardPath[0])}</p>
-                            <p><strong>Blue Corner:</strong> Position 13 → ${JSON.stringify(boardPath[13])}</p>
-                            <p><strong>Green Corner:</strong> Position 27 → ${JSON.stringify(boardPath[27])}</p>
-                            <p><strong>Yellow Corner:</strong> Position 41 → ${JSON.stringify(boardPath[41])}</p>
+                            <h3>Expected Positions (One Square Away from Corner):</h3>
+                            <p><strong>Red:</strong> Position 1 → ${JSON.stringify(boardPath[1])}</p>
+                            <p><strong>Blue:</strong> Position 14 → ${JSON.stringify(boardPath[14])}</p>
+                            <p><strong>Green:</strong> Position 28 → ${JSON.stringify(boardPath[28])}</p>
+                            <p><strong>Yellow:</strong> Position 42 → ${JSON.stringify(boardPath[42])}</p>
                         </div>
                     `;
                     
-                    // Test 1: Check if all colors start at their corner positions
-                    const redStartsAtCorner = startPositions.red === 0;
-                    const blueStartsAtCorner = startPositions.blue === 13;
-                    const greenStartsAtCorner = startPositions.green === 27;
-                    const yellowStartsAtCorner = startPositions.yellow === 41;
+                    // Test 1: Check if all colors start one square away from corner in direction of travel
+                    const redStartsCorrect = startPositions.red === 1;
+                    const blueStartsCorrect = startPositions.blue === 14;
+                    const greenStartsCorrect = startPositions.green === 28;
+                    const yellowStartsCorrect = startPositions.yellow === 42;
                     
-                    addTestResult(resultsDiv, 'Red starts at corner (position 0)', redStartsAtCorner);
-                    addTestResult(resultsDiv, 'Blue starts at corner (position 13)', blueStartsAtCorner);
-                    addTestResult(resultsDiv, 'Green starts at corner (position 27)', greenStartsAtCorner);
-                    addTestResult(resultsDiv, 'Yellow starts at corner (position 41)', yellowStartsAtCorner);
+                    addTestResult(resultsDiv, 'Red starts one square away from corner (position 1)', redStartsCorrect);
+                    addTestResult(resultsDiv, 'Blue starts one square away from corner (position 14)', blueStartsCorrect);
+                    addTestResult(resultsDiv, 'Green starts one square away from corner (position 28)', greenStartsCorrect);
+                    addTestResult(resultsDiv, 'Yellow starts one square away from corner (position 42)', yellowStartsCorrect);
                     
                     // Test 2: Check overall consistency
-                    const allStartAtCorners = redStartsAtCorner && blueStartsAtCorner && greenStartsAtCorner && yellowStartsAtCorner;
-                    addTestResult(resultsDiv, 'All colors start at consistent corner positions', allStartAtCorners);
+                    const allStartCorrect = redStartsCorrect && blueStartsCorrect && greenStartsCorrect && yellowStartsCorrect;
+                    addTestResult(resultsDiv, 'All colors start one square away from corner in direction of travel', allStartCorrect);
                     
                     // Test 3: Check specific board positions
                     const redPosition = boardPath[startPositions.red];
@@ -119,16 +119,16 @@
                     const greenPosition = boardPath[startPositions.green];
                     const yellowPosition = boardPath[startPositions.yellow];
                     
-                    // Expected corner positions in a standard Ludo board
-                    const expectedRedCorner = [6, 1];
-                    const expectedBlueCorner = [0, 8];
-                    const expectedGreenCorner = [8, 13];
-                    const expectedYellowCorner = [13, 6];
+                    // Expected positions one square away from corner in direction of travel
+                    const expectedRedPosition = [6, 2];
+                    const expectedBluePosition = [1, 8];
+                    const expectedGreenPosition = [8, 13];
+                    const expectedYellowPosition = [13, 6];
                     
-                    const redPositionCorrect = JSON.stringify(redPosition) === JSON.stringify(expectedRedCorner);
-                    const bluePositionCorrect = JSON.stringify(bluePosition) === JSON.stringify(expectedBlueCorner);
-                    const greenPositionCorrect = JSON.stringify(greenPosition) === JSON.stringify(expectedGreenCorner);
-                    const yellowPositionCorrect = JSON.stringify(yellowPosition) === JSON.stringify(expectedYellowCorner);
+                    const redPositionCorrect = JSON.stringify(redPosition) === JSON.stringify(expectedRedPosition);
+                    const bluePositionCorrect = JSON.stringify(bluePosition) === JSON.stringify(expectedBluePosition);
+                    const greenPositionCorrect = JSON.stringify(greenPosition) === JSON.stringify(expectedGreenPosition);
+                    const yellowPositionCorrect = JSON.stringify(yellowPosition) === JSON.stringify(expectedYellowPosition);
                     
                     addTestResult(resultsDiv, `Red position correct: ${JSON.stringify(redPosition)}`, redPositionCorrect);
                     addTestResult(resultsDiv, `Blue position correct: ${JSON.stringify(bluePosition)}`, bluePositionCorrect);
