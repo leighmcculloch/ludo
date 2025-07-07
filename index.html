@@ -487,7 +487,8 @@
         let canRollDice = true;
         let consecutiveSixes = 0;
         let numberOfPlayers = 4; // Default to 4 players, can be changed
-        let testingMode = false; // Testing mode - always rolls sixes when enabled
+        let testingMode = false; // Testing mode - rolls six on first roll of each turn when enabled
+        let firstRollOfTurn = true; // Track if this is the first roll of the current turn
         
         const allPlayerColors = ['red', 'blue', 'green', 'yellow'];
         const allPlayerNames = ['Red', 'Blue', 'Green', 'Yellow'];
@@ -870,9 +871,14 @@
             canRollDice = false;
             
             setTimeout(() => {
-                diceValue = testingMode ? 6 : Math.floor(Math.random() * 6) + 1;
+                diceValue = (testingMode && firstRollOfTurn) ? 6 : Math.floor(Math.random() * 6) + 1;
                 dice.textContent = diceValue;
                 dice.classList.remove('rolling');
+                
+                // After the first roll, subsequent rolls in the same turn should be random
+                if (testingMode && firstRollOfTurn) {
+                    firstRollOfTurn = false;
+                }
                 
                 if (diceValue === 6) {
                     consecutiveSixes++;
@@ -1230,6 +1236,7 @@
         function nextPlayer() {
             currentPlayer = (currentPlayer + 1) % numberOfPlayers;
             consecutiveSixes = 0;
+            firstRollOfTurn = true; // Reset for the new player's turn
             updateUI();
         }
         
@@ -1279,6 +1286,7 @@
             gameEnded = false;
             canRollDice = true;
             consecutiveSixes = 0;
+            firstRollOfTurn = true; // Reset for the new game
             
             // Reset pieces
             Object.keys(pieces).forEach(color => {
